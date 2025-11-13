@@ -5,6 +5,7 @@ yarn-debug.log*
 yarn-error.log*
 
 # Environment variables
+.staging.env
 .env
 .env.*
 !.env.example

@@ -1,7 +1,9 @@
-import 'dotenv/config';
+import 'dotenv/config'
+
 import app from '#root/app.js';
 import '#configs/postgres';
 import http from 'http';
+
 
 const port = process.env.PORT || 3000;
 const server = http.createServer(app);
