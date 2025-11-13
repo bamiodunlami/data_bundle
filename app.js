@@ -20,6 +20,7 @@ app.use(
   })
 );
 app.use(morgan('tiny'));
+app.use('trust-proxy', 1) //rate limit reverse proxy setting
 app.use(rateLimit(parseInt(process.env.GEN_LIMIT_TIME), parseInt(process.env.GEN_LIMIT))); //rate limit
 app.use(express.json()); //body parser
 // app.use(cookieParser(process.env.COOKIE_SECRET));
