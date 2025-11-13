@@ -11,7 +11,7 @@ const pool =
         port: process.env.DB_PORT,
         database: process.env.DB_DATABASE,
       })
-    : new Pool(process.env.DATABASE_URL);
+    : new Pool({connectionString:process.env.DATABASE_URL + '?sslmode=require'});
 
 try {
   await pool.connect();
