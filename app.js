@@ -11,7 +11,7 @@ import '#util/logger';
 import v1Router from '#routers/v1.routers'; //version 1 router
 
 const app = express();
-
+app.set('trust proxy', 1);
 //security layer
 app.use(helmet());
 app.use(
@@ -20,7 +20,6 @@ app.use(
   })
 );
 app.use(morgan('tiny'));
-app.set('trust-proxy', 1) //rate limit reverse proxy setting
 app.use(rateLimit(parseInt(process.env.GEN_LIMIT_TIME), parseInt(process.env.GEN_LIMIT))); //rate limit
 app.use(express.json()); //body parser
 // app.use(cookieParser(process.env.COOKIE_SECRET));

@@ -7,7 +7,8 @@ const logger = createLogger({
 
 if (process.env.NODE_ENV === 'production') {
   console.log('production');
-  logger.add(new transports.File({ filename: './logs/error.log', level: 'warn' }));
+  // logger.add(new transports.File({ filename: './logs/error.log', level: 'warn' }));
+  logger.add(new transports.Console({ level: 'info' }));
 } else {
   logger.add(new transports.Console({ level: 'info' }));
 }
