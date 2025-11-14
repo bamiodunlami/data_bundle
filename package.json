@@ -8,7 +8,8 @@
     "start": "node index.js",
     "migration": "npx knex migrate:latest",
     "stage-migration": "npx knex migrate:latest --env staging",
-    "rollback": "npx knex migrate:rollback"
+    "rollback": "npx knex migrate:rollback",
+    "stage-rollback": "npx knex migrate:rollback --env staging"
   },
   "keywords": [],
   "author": "",

@@ -18,6 +18,13 @@ export const signupService = async (payload) => {
     //sign token
     const accessToken = await signAccessToken({ id: user.user_id });
     const refreshToken = await signRefreshToken({ id: user.user_id });
+
+    //save refresh token
+    const refreshQuery = 'INSERT INTO session_table (user_id, session, status) VALUES ($1, $2, $3)';
+    const refreshValue = [user.user_id, refreshToken, true];
+    const saveSession = await pool.query(refreshQuery, refreshValue);
+    // console.log(saveSession.rows[0]);
+
     //send cookie
     return serviceResponse(201, true, 'User created', {
       accessToken: accessToken,
@@ -47,9 +54,23 @@ export const loginService = async (payload) => {
     const { user_id, email, name, password } = user;
     const isPassword = await confirmPassword(payload.password, password);
     if (!isPassword) return serviceResponse(400, false, 'Incorrect Credentials', {});
+
+    //save last login
+    const date = new Date();
+    const dateString = date.toJSON();
+    const llText = 'UPDATE user_table SET last_login=$1 WHERE email = $2';
+    const llValue = [dateString, email];
+    const ll = await pool.query(llText, llValue);
+
     //sign token
     const accessToken = await signAccessToken({ user_id: user_id });
     const refreshToken = await signRefreshToken({ user_id: user_id });
+
+    //update refresh token
+    const refreshQuery = 'UPDATE session_table SET session=$1 WHERE user_id = $2';
+    const refreshValue = [refreshToken, user_id];
+    const updateSessoin = await pool.query(refreshQuery, refreshValue);
+
     //send
     return serviceResponse(200, true, '', {
       user_id,
