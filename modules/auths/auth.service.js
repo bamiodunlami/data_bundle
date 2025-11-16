@@ -131,5 +131,5 @@ export const verifyResetTokenService = async (payload) => {
   if (rows.length < 1) return serviceResponse(401, false, 'Timeout', {});
   //check expiry
   //send ok
-  return serviceResponse(200, true, '', {});
+  return serviceResponse(200, true, '', {})
 };
