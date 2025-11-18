@@ -5,6 +5,7 @@ import { hashPassword, confirmPassword } from '#helpers/passwor.helper';
 import { signAccessToken, signRefreshToken, signResetPasswordToken, confirmResetPasswordToken } from '#helpers/jwt.helper';
 import { createHash } from '#util/createHash';
 import { client, sender } from '#configs/mail-trap';
+import { sendResetPassword } from '#root/configs/twillio.js';
 
 export const signupService = async (payload) => {
   const { name, email, password } = payload;
@@ -107,16 +108,24 @@ export const resetPasswordService = async (payload, host) => {
     client.send({
       from: sender,
       to: recipients,
+      reply_to: {
+        email: 'no-reply@smeair.com',
+        name: 'no-rely',
+      },
       template_uuid: 'd975aab2-92c3-495f-80b1-103f832b53ca',
       template_variables: {
         name: user.name,
         link: process.env.NODE_ENV !== 'production' ? `http://${resetLink}` : `https://${resetLink}`,
       },
     });
+    console.log('mail sent');
   } catch (err) {
-    // console.log(err);
+    console.log(err);
     throw new appError(500, err, err.code);
   }
+
+  // await sendResetPassword('bamiodunlami22@gmail.com', 'bamidele', resetLink);
+
   //send origial unhashed toked
   return serviceResponse(200, true, 'If the email exists, we have sent you a password reset link', {});
 };
@@ -131,5 +140,5 @@ export const verifyResetTokenService = async (payload) => {
   if (rows.length < 1) return serviceResponse(401, false, 'Timeout', {});
   //check expiry
   //send ok
-  return serviceResponse(200, true, '', {})
+  return serviceResponse(200, true, '', {});
 };

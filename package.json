@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
     "start": "node index.js",
     "migration": "npx knex migrate:latest",
     "stage-migration": "npx knex migrate:latest --env staging",
@@ -29,6 +29,7 @@
     "#util/*": "./util/*.js"
   },
   "dependencies": {
+    "@sendgrid/mail": "^8.1.6",
     "bcrypt": "^6.0.0",
     "connect-timeout": "^1.9.1",
     "cookie-parser": "^1.4.7",
@@ -48,6 +49,7 @@
     "xss": "^1.0.15"
   },
   "devDependencies": {
+    "jest": "^29.7.0",
     "knex": "^3.1.0",
     "nodemon": "^3.1.10"
   }

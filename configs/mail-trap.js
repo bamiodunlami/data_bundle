@@ -7,7 +7,7 @@ export const client = new MailtrapClient({
 
 export const sender = {
   email: process.env.MAILTRAP_SENDER,
-  name: 'Mailtrap Test',
+  name: 'Data-bundle',
 };
 
 
