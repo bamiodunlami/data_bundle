@@ -5,7 +5,6 @@ import { hashPassword, confirmPassword } from '#helpers/passwor.helper';
 import { signAccessToken, signRefreshToken, signResetPasswordToken, confirmResetPasswordToken } from '#helpers/jwt.helper';
 import { createHash } from '#util/createHash';
 import { client, sender } from '#configs/mail-trap';
-import { sendResetPassword } from '#root/configs/twillio.js';
 
 export const signupService = async (payload) => {
   const { name, email, password } = payload;
@@ -69,8 +68,8 @@ export const loginService = async (payload) => {
     const refreshToken = await signRefreshToken({ user_id: user_id });
 
     //update refresh token
-    const refreshQuery = 'UPDATE session_table SET session=$1 WHERE user_id = $2';
-    const refreshValue = [refreshToken, user_id];
+    const refreshQuery = 'UPDATE session_table SET session=$1, status=$2 WHERE user_id = $3';
+    const refreshValue = [refreshToken, true, user_id];
     const updateSessoin = await pool.query(refreshQuery, refreshValue);
 
     //send
@@ -98,12 +97,15 @@ export const resetPasswordService = async (payload, host) => {
   const hasedResetToken = createHash(token);
   const expire_at = new Date(Date.now() + 10 * 60 * 1000);
   //save hased to database
+  //invalidate all other requests
+  //create new hash
   const saveHashedResetToken = 'INSERT INTO password_reset (user_id, token_hashed, expire_at, used) VALUES($1, $2, $3, $4)';
   const saveHashedValue = [user.user_id, hasedResetToken, expire_at, false];
   const saveSession = await pool.query(saveHashedResetToken, saveHashedValue);
   //send mail
   const recipients = [{ email: 'odunlamibamidelejohn@gmail.com' }];
   const resetLink = `${host}/reset-password?auth=${token}`;
+
   try {
     client.send({
       from: sender,
@@ -118,7 +120,6 @@ export const resetPasswordService = async (payload, host) => {
         link: process.env.NODE_ENV !== 'production' ? `http://${resetLink}` : `https://${resetLink}`,
       },
     });
-    console.log('mail sent');
   } catch (err) {
     console.log(err);
     throw new appError(500, err, err.code);
@@ -136,9 +137,48 @@ export const verifyResetTokenService = async (payload) => {
   //hash token
   const hasedToken = await createHash(payload);
   //get token from db
-  const { rows } = await pool.query('SELECT token_hashed, used from password_reset WHERE token_hashed = $1 AND expire_at > $2', [hasedToken, new Date(Date.now())]);
-  if (rows.length < 1) return serviceResponse(401, false, 'Timeout', {});
-  //check expiry
+  const { rows } = await pool.query('SELECT token_hashed, user_id, used from password_reset WHERE token_hashed = $1 AND expire_at > $2', [hasedToken, new Date(Date.now())]);
+  if (rows.length < 1 || rows[0].used === true) return serviceResponse(401, false, 'Timeout', {});
   //send ok
-  return serviceResponse(200, true, '', {});
+  return serviceResponse(200, true, '', { payload });
+};
+
+export const changePasswordService = async (payload) => {
+  const { token, password } = payload;
+  //check reset token
+  await confirmResetPasswordToken(token);
+  const hasedToken = await createHash(token);
+
+  const { rows } = await pool.query('SELECT token_hashed, user_id, used from password_reset WHERE token_hashed = $1 AND expire_at > $2', [hasedToken, new Date(Date.now())]);
+  if (rows.length < 1 || rows[0].used === true) return serviceResponse(401, false, 'Timeout', {});
+  const user = rows[0].user_id;
+
+  //find user and compare current password with what is padded in
+  const userQuery = await pool.query('SELECT password FROM user_table WHERE user_id = $1', [user]);
+
+  const userData = userQuery.rows[0];
+  const isSamePassword = await confirmPassword(password, userData.password);
+  if (isSamePassword) return serviceResponse(400, false, 'You cannot use your previous password', {});
+
+  //update user_table_passwordChanged at
+  const hashedPassword = await hashPassword(password);
+
+  try {
+    await pool.query('BEGIN');
+
+    await pool.query('UPDATE user_table SET password = $1, password_changed_at = $2 WHERE user_id = $3', [hashedPassword, new Date().toJSON(), user]);
+
+    // mark the reset token as used
+    await pool.query('UPDATE password_reset SET used = $1 WHERE user_id = $2', [true, user]);
+
+    // invalidate existing sessions
+    await pool.query('UPDATE session_table SET status = $1 WHERE user_id = $2', [false, user]);
+
+    await pool.query('COMMIT');
+    //send email for password change notification
+    return serviceResponse(200, true, 'kindly login', {});
+  } catch (err) {
+    await pool.query('ROLLBACK');
+    throw new appError(500, err);
+  }
 };

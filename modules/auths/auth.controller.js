@@ -1,7 +1,8 @@
 import { asyncHandler } from '#util/errorHandler';
-import { signupService, loginService, resetPasswordService, verifyResetTokenService } from './auth.service.js';
+import { signupService, loginService, resetPasswordService, verifyResetTokenService, changePasswordService } from './auth.service.js';
 import { response } from '#util/responder';
 import { accessCookie, refreshCookie } from '#helpers/cookie.helper';
+import xss from 'xss';
 
 export const signup = asyncHandler(async (req, res) => {
   const data = await signupService(req.body);
@@ -39,4 +40,9 @@ export const resetPassword = asyncHandler(async (req, res) => {
 export const verifyResetToken = asyncHandler(async (req, res) => {
   const data = await verifyResetTokenService(req.query.auth);
   return response(res, data.statusCode, data.success, data.message, data.data);
+});
+
+export const changePassword = asyncHandler(async (req, res) => {
+  const data = await changePasswordService(req.body);
+  return response(res, data.statusCode, data.success, data.message);
 });

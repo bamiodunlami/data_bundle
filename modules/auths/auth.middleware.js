@@ -33,7 +33,18 @@ export const validateResetPassword = async (req, res, next) => {
   next();
 };
 
+export const validateChangePassword = async (req, res, next) => {
+  const schema = Joi.object({
+    password: Joi.string().min(6).required(),
+    token: Joi.string().required(),
+  });
+  const { error } = await schema.validate(req.body);
+  if (error) throw new appError(400, error);
+  next();
+};
+
 export const validateParams = (req, res, next) => {
   const clean = xss(req.query.auth);
+  req.query.auth = clean;
   next();
 };
