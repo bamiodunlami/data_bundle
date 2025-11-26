@@ -56,13 +56,3 @@ export const refreshToken = asyncHandler(async (req, res) => {
   return response(res, data.statusCode, data.success, data.message);
 });
 
-// auth0
-export const auth0Home = asyncHandler(async (req, res) => {
-  console.log(req.oidc.isAuthenticated())
-  res.send(req.oidc.isAuthenticated() ? 'Logged in' : 'Logged out');
-});
-
-export const auth0CallBack = asyncHandler(async (req, res) => {
-  console.log(JSON.stringify(req.oidc.user))
-  res.send(JSON.stringify(req.oidc.user));
-});
