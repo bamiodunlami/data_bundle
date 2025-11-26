@@ -1,8 +1,8 @@
 import pool from '#configs/postgres';
-import { serviceResponse } from '#util/responder';
+import {serviceResponse } from '#util/responder';
 import { appError } from '#util/errorHandler';
 import { hashPassword, confirmPassword } from '#helpers/passwor.helper';
-import { signAccessToken, signRefreshToken, signResetPasswordToken, confirmResetPasswordToken } from '#helpers/jwt.helper';
+import { signAccessToken, signRefreshToken, signResetPasswordToken, confirmResetPasswordToken, confirmRefreshToken } from '#helpers/jwt.helper';
 import { createHash } from '#util/createHash';
 import { client, sender } from '#configs/mail-trap';
 
@@ -180,5 +180,57 @@ export const changePasswordService = async (payload) => {
   } catch (err) {
     await pool.query('ROLLBACK');
     throw new appError(500, err);
+  }
+};
+
+export const refreshTokenService = async (payload) => {
+  if (!payload) {
+    return serviceResponse(400, false, 'No refresh token', {});
+  }
+
+  const {user_id} = await confirmRefreshToken(payload);
+
+  const { rows } = await pool.query('SELECT user_id, status FROM session_table WHERE user_id=$1', [user_id]);
+  if (!rows.length || !rows[0].status) {
+    return serviceResponse(400, false, 'Invalid token', {});
+  }
+
+  //find user
+  const queryText = 'SELECT * FROM user_table WHERE user_id = $1 ';
+  const value = [rows[0].user_id];
+  try {
+    const query = await pool.query(queryText, value);
+
+    const user = query.rows[0];
+    const { user_id, email, name } = user;
+
+    //save last login
+    const date = new Date();
+    const dateString = date.toJSON();
+    const llText = 'UPDATE user_table SET last_login=$1 WHERE email = $2';
+    const llValue = [dateString, email];
+    const ll = await pool.query(llText, llValue);
+
+    //sign token
+    const accessToken = await signAccessToken({ user_id: user_id });
+    const refreshToken = await signRefreshToken({ user_id: user_id });
+
+    // console.log(accessToken, refreshToken)
+
+    //update refresh token
+    const refreshQuery = 'UPDATE session_table SET session=$1, status=$2 WHERE user_id = $3';
+    const refreshValue = [refreshToken, true, user_id];
+    const updateSessoin = await pool.query(refreshQuery, refreshValue);
+
+    //send
+    return serviceResponse(200, true, '', {
+      user_id,
+      email,
+      name,
+      accessToken,
+      refreshToken,
+    });
+  } catch (e) {
+    throw new appError(500, e);
   }
 };

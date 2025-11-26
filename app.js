@@ -6,12 +6,14 @@ import cors from 'cors';
 import hpp from 'hpp';
 import cookieParser from 'cookie-parser';
 import { globalErrorHandler } from '#util/errorHandler';
-import '#util/logger';
+import  '#util/logger';
 
 import v1Router from '#routers/v1.routers'; //version 1 router
 
 const app = express();
+
 app.set('trust proxy', 1);
+
 //security layer
 app.use(helmet());
 app.use(
@@ -23,11 +25,16 @@ app.use(
 app.use(morgan('tiny'));
 app.use(rateLimit(parseInt(process.env.GEN_LIMIT_TIME), parseInt(process.env.GEN_LIMIT))); //rate limit
 app.use(express.json()); //body parser
-// app.use(cookieParser(process.env.COOKIE_SECRET));
+app.use(cookieParser(process.env.COOKIE_SECRET));
 app.use(hpp());
+
 
 //router
 app.use('/api/v1', v1Router); //v1 router
+
+app.get('/callback', (req, res)=>{
+  console.log(req)
+})
 
 //helath check
 app.get('/', (req, res) => {

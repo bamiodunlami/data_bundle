@@ -35,15 +35,29 @@ export const signResetPasswordToken = async (data) => {
 };
 
 // const compare accessToken
-export const confirmAcessToken = async (data) => {};
+export const confirmAcessToken = async (data) => {
+  try {
+    const token = await jwt.verify(data, process.env.JWT_ACCESS_SECRET);
+    return token;
+  } catch (err) {
+    throw new appError(400, err);
+  }
+};
 
 // const compare refreshToken
-export const confirmRefreshToken = async (data) => {};
+export const confirmRefreshToken = async (data) => {
+  try {
+    const token = await jwt.verify(data, process.env.JWT_REFRESH_SERCRET);
+    return token;
+  } catch (err) {
+    return new appError(400, err);
+  }
+};
 
 // const compare refreshToken
 export const confirmResetPasswordToken = async (data) => {
   try {
-    return  await jwt.verify(data, process.env.JWT_RESET_PASSWORD_SECRET)
+    return await jwt.verify(data, process.env.JWT_RESET_PASSWORD_SECRET);
   } catch (err) {
     throw new appError(400, err);
   }
