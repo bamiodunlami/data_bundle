@@ -2,12 +2,12 @@ import express from 'express';
 import rateLimit from '#configs/ratelimit';
 import { auth0 } from '#configs/auth0';
 import pkg from 'express-openid-connect';
-const {requiresAuth} = pkg
+// const {requiresAuth} = pkg
 import { signup, login, resetPassword, verifyResetToken, changePassword, refreshToken, auth0Home, auth0CallBack } from './auth.controller.js';
 import { verifyInput } from '#middlewares/verifyInput.middleware';
 import { validateSignup, validateLogin, validateResetPassword, validateParams, validateChangePassword } from './auth.middleware.js';
 
-const authRoute = express.Router();
+// const authRoute = express.Router();
 
 authRoute.use(auth0);
 
