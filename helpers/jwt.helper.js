@@ -34,6 +34,17 @@ export const signResetPasswordToken = async (data) => {
   }
 };
 
+export const signEmailVerificationToken = async (data) => {
+  try {
+    const token = await jwt.sign(data, process.env.JWT_EMAIL_VERIFICATION, {
+      expiresIn: parseInt(process.env.SHOT_TOKEN_TIME) * 60,
+    });
+    return token;
+  } catch (err) {
+    throw new appError(500, err);
+  }
+};
+
 // const compare accessToken
 export const confirmAcessToken = async (data) => {
   try {

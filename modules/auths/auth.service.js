@@ -1,5 +1,5 @@
 import pool from '#configs/postgres';
-import {serviceResponse } from '#util/responder';
+import { serviceResponse } from '#util/responder';
 import { appError } from '#util/errorHandler';
 import { hashPassword, confirmPassword } from '#helpers/passwor.helper';
 import { signAccessToken, signRefreshToken, signResetPasswordToken, confirmResetPasswordToken, confirmRefreshToken } from '#helpers/jwt.helper';
@@ -103,11 +103,11 @@ export const resetPasswordService = async (payload, host) => {
   const saveHashedValue = [user.user_id, hasedResetToken, expire_at, false];
   const saveSession = await pool.query(saveHashedResetToken, saveHashedValue);
   //send mail
-  const recipients = [{ email: 'odunlamibamidelejohn@gmail.com' }];
+  const recipients = [{ email: user.email }];
   const resetLink = `${host}/reset-password?auth=${token}`;
 
   try {
-    client.send({
+    await client.send({
       from: sender,
       to: recipients,
       reply_to: {
@@ -188,7 +188,7 @@ export const refreshTokenService = async (payload) => {
     return serviceResponse(400, false, 'No refresh token', {});
   }
 
-  const {user_id} = await confirmRefreshToken(payload);
+  const { user_id } = await confirmRefreshToken(payload);
 
   const { rows } = await pool.query('SELECT user_id, status FROM session_table WHERE user_id=$1', [user_id]);
   if (!rows.length || !rows[0].status) {

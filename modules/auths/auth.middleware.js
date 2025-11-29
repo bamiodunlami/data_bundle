@@ -1,6 +1,5 @@
 import Joi from 'joi';
 import { appError } from '#root/util/errorHandler.js';
-import xss from 'xss';
 
 export const validateSignup = async (req, res, next) => {
   const schema = Joi.object({
@@ -40,11 +39,5 @@ export const validateChangePassword = async (req, res, next) => {
   });
   const { error } = await schema.validate(req.body);
   if (error) throw new appError(400, error);
-  next();
-};
-
-export const validateParams = (req, res, next) => {
-  const clean = xss(req.query.auth);
-  req.query.auth = clean;
   next();
 };

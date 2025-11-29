@@ -18,8 +18,7 @@ export const authorize = async (req, res, next) => {
     if (!rows.length || iat < rows[0].password_changed_at.getTime() / 1000) {
       return response(res, 400, false, 'Kindly login');
     }
-
-    req.user = rows[0];
+    req.user = user_id;
     next();
   } catch (err) {
     return new appError(400, err);

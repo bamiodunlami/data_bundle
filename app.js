@@ -63,6 +63,7 @@ process.on('unhandledRejection', (err) => {
 
 //404
 app.use((req, res) => {
+  console.log('Not found')
   return res.status(404).send({
     success: false,
     message: 'Not found',
