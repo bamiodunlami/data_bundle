@@ -61,7 +61,7 @@ export const confirmRefreshToken = async (data) => {
     const token = await jwt.verify(data, process.env.JWT_REFRESH_SERCRET);
     return token;
   } catch (err) {
-    return new appError(400, err);
+    throw new appError(400, err);
   }
 };
 
@@ -69,6 +69,15 @@ export const confirmRefreshToken = async (data) => {
 export const confirmResetPasswordToken = async (data) => {
   try {
     return await jwt.verify(data, process.env.JWT_RESET_PASSWORD_SECRET);
+  } catch (err) {
+    throw new appError(400, err);
+  }
+};
+
+export const confirmEmailVerification = async (data) => {
+  try {
+    const token = await jwt.verify(data, process.env.JWT_EMAIL_VERIFICATION);
+    return token;
   } catch (err) {
     throw new appError(400, err);
   }
