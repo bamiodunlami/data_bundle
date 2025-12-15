@@ -6,7 +6,8 @@ import cors from 'cors';
 import hpp from 'hpp';
 import cookieParser from 'cookie-parser';
 import { globalErrorHandler } from '#util/errorHandler';
-import  '#util/logger';
+import '#util/logger';
+import crypto from 'node:crypto';
 
 import v1Router from '#routers/v1.routers'; //version 1 router
 
@@ -28,13 +29,30 @@ app.use(express.json()); //body parser
 app.use(cookieParser(process.env.COOKIE_SECRET));
 app.use(hpp());
 
-
 //router
 app.use('/api/v1', v1Router); //v1 router
 
-app.get('/callback', (req, res)=>{
-  console.log(req)
-})
+// function tryPromise(text) {
+//   return new Promise((resolve, reject) => {
+//     try {
+//       text = crypto.createHash('sh256').update(text).digest('hex');
+//       resolve(text);
+//     } catch (e) {
+//       reject("some error");
+//     }
+//   });
+// }
+
+// app.get('/callback', (req, res) => {
+//   tryPromise('Here is the text')
+//     .then((result) => {
+//       console.log(result);
+//     })
+//     .catch((e) => {
+//       console.log(e);
+//     });
+// });
+
 
 //helath check
 app.get('/', (req, res) => {
@@ -63,7 +81,7 @@ process.on('unhandledRejection', (err) => {
 
 //404
 app.use((req, res) => {
-  console.log('Not found')
+  console.log('Not found');
   return res.status(404).send({
     success: false,
     message: 'Not found',

@@ -51,8 +51,10 @@ export const refreshToken = asyncHandler(async (req, res) => {
   const data = await refreshTokenService(payload);
   const { accessToken, refreshToken, user_id, name, email } = data.data;
   // console.log(accessToken, '\n', refreshToken)
+  if (!data.success) {
+    return response(res, data.statusCode, data.success, data.message);
+  }
   accessCookie(res, accessToken);
   refreshCookie(res, refreshToken);
   return response(res, data.statusCode, data.success, data.message);
 });
-

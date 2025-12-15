@@ -63,10 +63,10 @@ export const verifyEmailService = async (user_id, host) => {
 
 export const confirmEmailService = async (payload) => {
   const token = await confirmEmailVerification(payload);
-  console.log('this is token \n', token);
   const { rows } = await pool.query('UPDATE user_table SET email_verified=$1 WHERE user_id=$2 RETURNING user_id, email, email_verified', [true, token.user_id]);
   if (!rows.length) return serviceResponse(400, false, 'Error, try again', {});
   if (rows[0].email_verified) return serviceResponse(400, true, 'Email already verified', {});
-
   return serviceResponse(200, true, 'Email verified', {});
 };
+
+//
