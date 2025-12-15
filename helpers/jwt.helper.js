@@ -82,3 +82,22 @@ export const confirmEmailVerification = async (data) => {
     throw new appError(400, err);
   }
 };
+
+export class createToken {
+  async createToken(data) {
+    try {
+      const signed = await jwt.sign(data, "secrete123", {
+        expiresIn: 10 * 60, //in minute
+      });
+      return signed;
+    } catch (err) {
+      throw new appError(501, err);
+    }
+  }
+}
+
+const tokenCreator = new createToken()
+// console.log(letConfirm.data)
+const token = await tokenCreator.createToken({email:"bamidele"})
+console.log(token)
+
